@@ -1,0 +1,36 @@
+{
+  "name": "commonjs-es5-test",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsx ./src/index.ts",
+    "dev2": "pm2 start ecosystem.config.cjs",
+    "stop": "pm2 stop ecosystem.config.cjs",
+    "dev2:nohup": "nohup tsx ./src/index2.ts > my_app_log.log 2> my_app_err.log &",
+    "build": "rollup --config rollup.config.js ",
+    "tap": "tsx ./src/utils/mumu.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@u4/opencv4nodejs": "^6.5.2",
+    "adb-ts": "^4.0.4",
+    "axios": "^1.6.8",
+    "paddleocrjson": "^1.1.1-a",
+    "pm2": "^5.4.0",
+    "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/node": "^20.12.8",
+    "tslib": "^2.6.2",
+    "tsx": "^4.8.2",
+    "typescript": "^5.4.5"
+  },
+  "opencv4nodejs": {
+    "disableAutoBuild": "0"
+  }
+}
