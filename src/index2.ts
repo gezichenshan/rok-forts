@@ -8,10 +8,11 @@ import fs from "fs";
 import path from "path";
 import sharp from "sharp";
 import { fileURLToPath } from 'url';
-import { Client as AdbClient } from "adb-ts";
+import { Client as AdbClient, Device } from "adb-ts";
 import { spawn } from "child_process";
 import { setTimeout } from "node:timers/promises";
 import { addFort } from "./services/api";
+import { NETWORK_ERR_BTN } from '../src/constant'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -60,10 +61,22 @@ function getTextFromImage() {
   });
 }
 
+//有时候会有联盟技能等弹窗遮挡，点击其他区域消除弹窗。
+async function clearOtherArea(device: Device) {
+  await device.shell(`input tap 1590 450`); //点击其他位置，避免下面的事件不生效
+}
+
+async function clearNetworkErr(device: Device) {
+  await device.shell(`input tap ${NETWORK_ERR_BTN}`);
+}
+
+
 async function main() {
   const device = devices.find(d => d.transportId === kindomDeviceTransportIdMap['544'])
   // console.log(device)
-  const screenshotBuffer = await device.screenshot();
+  clearOtherArea(device!)
+  clearNetworkErr(device!)
+  const screenshotBuffer = await device!.screenshot();
   // fs.writeFileSync(screenshotPath, screenshotBuffer)
   sharp(screenshotBuffer)
     .extract(cropPosition)
