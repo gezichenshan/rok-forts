@@ -16,6 +16,7 @@ import * as db from './db'
 import { getPixelmatchResult } from '../src/pixelmatch'
 import { addFort } from "./services/api";
 import { NETWORK_ERR_BTN, FORT_KEY_STRINGS } from '../src/constant'
+import { Record } from './model'
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -58,7 +59,7 @@ function parse() {
   ls.stdout.on("data", (data: string) => {
     console.log(`stdout: ${data}`);
     if (data && FORT_KEY_STRINGS.some(keyStr => data.includes(keyStr))) {
-      addFort({ content: `${data}`, created_at: dayjs().format("YYYY-MM-DD HH:mm:ss") }).catch(err => {
+      addFort({ content: `${data}`, created_at: firstUnhandled.created_at }).catch(err => {
         console.log(err)
       }).finally(() => {
       })

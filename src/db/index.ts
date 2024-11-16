@@ -3,11 +3,9 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Low } from "lowdb";
 import { JSONFile } from "lowdb/node";
+import dayjs from 'dayjs';
+import { Record } from '../model'
 
-interface Record {
-    src: string
-    handled: boolean
-}
 type Data = {
     records: Record[];
 };
@@ -25,6 +23,7 @@ export async function saveData(src: string) {
     db.data.records.push({
         src,
         handled: false,
+        created_at: dayjs().format("YYYY-MM-DD HH:mm:ss")
     });
     await db.write();
 }

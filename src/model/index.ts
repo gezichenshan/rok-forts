@@ -10,3 +10,9 @@ export interface Location {
     created_at: string;
     failed: boolean
 }
+
+export interface Record {
+    src: string
+    handled: boolean
+    created_at: string
+}
