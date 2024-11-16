@@ -58,7 +58,7 @@ function parse() {
   ls.stdout.on("data", (data: string) => {
     console.log(`stdout: ${data}`);
     if (data && FORT_KEY_STRINGS.some(keyStr => data.includes(keyStr))) {
-      addFort({ content: `${data}` }).catch(err => {
+      addFort({ content: `${data}`, created_at: dayjs().format("YYYY-MM-DD HH:mm:ss") }).catch(err => {
         console.log(err)
       }).finally(() => {
       })
