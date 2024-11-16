@@ -3,20 +3,23 @@
 // /Users/super/yjd/platform-tools/adb kill-server
 // /Users/super/yjd/platform-tools/adb start-server
 // ./src/mumutool port
-// /Users/super/yjd/platform-tools/adb connect 127.0.0.1:21000
+// /Users/super/yjd/platform-tools/adb connect 127.0.0.1:16417
 import fs from "fs";
+import dayjs from "dayjs";
 import path from "path";
 import sharp from "sharp";
 import { fileURLToPath } from 'url';
 import { Client as AdbClient, Device } from "adb-ts";
 import { spawn } from "child_process";
 import { setTimeout } from "node:timers/promises";
+import * as db from './db'
+import { getPixelmatchResult } from '../src/pixelmatch'
 import { addFort } from "./services/api";
-import { NETWORK_ERR_BTN } from '../src/constant'
+import { NETWORK_ERR_BTN, FORT_KEY_STRINGS } from '../src/constant'
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const screenshotPath = path.join(__dirname, './screenshots/', 'record.png')
 
 
 const adb = new AdbClient({
@@ -26,7 +29,7 @@ const adb = new AdbClient({
   port: 5037,
 });
 const kindomDeviceTransportIdMap = {
-  '544': '2',
+  '544': '3',
 }
 
 const devices = await adb.map((device) => device);
@@ -39,22 +42,31 @@ const cropPosition = {
   height: 54
 }
 
+
 function getTextFromImage() {
+  let firstUnhandled = db.getFirstUnhandledData()
+  if (!firstUnhandled) return
+
+  const screenshotPath = path.join(__dirname, './records/', firstUnhandled.src)
   const ls = spawn(
     'shortcuts',
     ['run', 'ocr-text', '-i', screenshotPath]
   );
   // control 0 --action run_cmd --cmd "input tap 195 19"
-  ls.stdout.on("data", (data) => {
+  console.log(`get text from ${screenshotPath}`)
+  ls.stdout.on("data", (data: string) => {
     console.log(`stdout: ${data}`);
-    if (data) {
+    if (data && FORT_KEY_STRINGS.some(keyStr => data.includes(keyStr))) {
       addFort({ content: `${data}` }).catch(err => {
         console.log(err)
+      }).finally(() => {
+        // ls.kill('SIGHUP')
       })
     }
   });
   ls.stderr.on("data", (data) => {
     console.error(`stderr: ${data} `);
+    // ls.kill('SIGHUP')
   });
   ls.on("close", (code) => {
     console.log(`child process exited with code ${code} `);
@@ -71,19 +83,41 @@ async function clearNetworkErr(device: Device) {
 }
 
 
+let prevImgBuffer: Buffer
+let currentImgBuffer: Buffer
+
 async function main() {
   const device = devices.find(d => d.transportId === kindomDeviceTransportIdMap['544'])
   // console.log(device)
   clearOtherArea(device!)
   clearNetworkErr(device!)
   const screenshotBuffer = await device!.screenshot();
-  // fs.writeFileSync(screenshotPath, screenshotBuffer)
+
+
   sharp(screenshotBuffer)
     .extract(cropPosition)
-    .toFile(screenshotPath, function (err) {
-      // Extract a region of the input image, saving in the same format.
-      getTextFromImage()
-    });
+    .ensureAlpha()
+    .raw()
+    .toBuffer().then(buffer => {
+      let currentImgBuffer = buffer
+      if (prevImgBuffer) {
+        const numDiffPixels = getPixelmatchResult(prevImgBuffer, currentImgBuffer)
+        console.log('numDiffPixels:', numDiffPixels)
+        if (numDiffPixels > 0) {
+
+          const screenshotName = `${dayjs().format('YYYYMMDD-HHmmss')}.png`
+          const screenshotPath = path.join(__dirname, './records/', screenshotName)
+          sharp(screenshotBuffer)
+            .extract(cropPosition)
+            .toFile(screenshotPath, function (err) {
+              //save screenshot file and save meta data to db
+              db.saveData(screenshotPath)
+            });
+          console.log(currentImgBuffer)
+        }
+      }
+      prevImgBuffer = currentImgBuffer
+    })
 }
 while (true) {
   main();
