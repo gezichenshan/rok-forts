@@ -40,3 +40,5 @@ export const NEW_CLICK_IDLE_TIMEOUT = 750;
 export const MAP_ANIMATION_DURATION = 500;
 export const LOCATION_QUERY_LOOP = 5000;
 export const NEXT_LOOP_DURATION = 60000;
+//fort
+export const FORT_KEY_STRINGS = ['劫掠者', '城寨', '取消']

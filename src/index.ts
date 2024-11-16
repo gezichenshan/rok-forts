@@ -15,7 +15,7 @@ import { addFort } from "./services/api";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const screenshotPath = path.join(__dirname, './screenshots/', 'record.png')
+const screenshotPath = path.join(__dirname, './pixelmatch/images', '2.png')
 
 
 const adb = new AdbClient({
@@ -30,7 +30,7 @@ const kindomDeviceTransportIdMap = {
 
 const devices = await adb.map((device) => device);
 
-console.log(devices)
+// console.log(devices)
 const cropPosition = {
   left: 511,
   top: 188,
@@ -62,16 +62,19 @@ function getTextFromImage() {
     if (data) {
       addFort({ content: data })
     }
+    // ls.kill('SIGHUP')
   });
   ls.stderr.on("data", (data) => {
     console.error(`stderr: ${data}`);
+    // ls.kill('SIGHUP')
   });
   ls.on("close", (code) => {
     console.log(`child process exited with code ${code}`);
   });
 }
-main()
-// while (true) {
-//   const timeout = await main();
-//   await setTimeout(timeout);
-// }
+// main()
+getTextFromImage()
+while (true) {
+  getTextFromImage()
+  await setTimeout(5000);
+}

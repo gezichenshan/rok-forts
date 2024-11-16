@@ -43,29 +43,31 @@ const cropPosition = {
 }
 
 
-function getTextFromImage() {
+function parse() {
   let firstUnhandled = db.getFirstUnhandledData()
   if (!firstUnhandled) return
 
   const screenshotPath = path.join(__dirname, './records/', firstUnhandled.src)
+  const testImgPath = path.join(__dirname, './pixelmatch/images/20241116-1426755.png')
   const ls = spawn(
     'shortcuts',
     ['run', 'ocr-text', '-i', screenshotPath]
   );
   // control 0 --action run_cmd --cmd "input tap 195 19"
-  console.log(`get text from ${screenshotPath}`)
+  console.log(`parse text from ${screenshotPath}`)
   ls.stdout.on("data", (data: string) => {
     console.log(`stdout: ${data}`);
     if (data && FORT_KEY_STRINGS.some(keyStr => data.includes(keyStr))) {
       addFort({ content: `${data}` }).catch(err => {
         console.log(err)
       }).finally(() => {
-        // ls.kill('SIGHUP')
       })
     }
+    db.setDataHandled(firstUnhandled)
   });
   ls.stderr.on("data", (data) => {
-    console.error(`stderr: ${data} `);
+    console.error(`stderr: ${data} ${screenshotPath}`);
+    db.setDataHandled(firstUnhandled)
     // ls.kill('SIGHUP')
   });
   ls.on("close", (code) => {
@@ -86,7 +88,7 @@ async function clearNetworkErr(device: Device) {
 let prevImgBuffer: Buffer
 let currentImgBuffer: Buffer
 
-async function main() {
+async function record() {
   const device = devices.find(d => d.transportId === kindomDeviceTransportIdMap['544'])
   // console.log(device)
   clearOtherArea(device!)
@@ -103,15 +105,15 @@ async function main() {
       if (prevImgBuffer) {
         const numDiffPixels = getPixelmatchResult(prevImgBuffer, currentImgBuffer)
         console.log('numDiffPixels:', numDiffPixels)
-        if (numDiffPixels > 0) {
+        if (numDiffPixels > 200) {
 
-          const screenshotName = `${dayjs().format('YYYYMMDD-HHmmss')}.png`
+          const screenshotName = `${dayjs().format('YYYYMMDD-HHmmSSS')}.png`
           const screenshotPath = path.join(__dirname, './records/', screenshotName)
           sharp(screenshotBuffer)
             .extract(cropPosition)
             .toFile(screenshotPath, function (err) {
               //save screenshot file and save meta data to db
-              db.saveData(screenshotPath)
+              db.saveData(screenshotName)
             });
           console.log(currentImgBuffer)
         }
@@ -119,7 +121,21 @@ async function main() {
       prevImgBuffer = currentImgBuffer
     })
 }
-while (true) {
-  main();
-  await setTimeout(1500);
+
+async function startRecord() {
+  while (true) {
+    record();
+    await setTimeout(1500);
+  }
 }
+
+async function startParsetxt() {
+  while (true) {
+    parse();
+    await setTimeout(5000);
+  }
+}
+
+
+startRecord()
+startParsetxt()

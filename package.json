@@ -5,9 +5,9 @@
   "type": "module",
   "main": "./src/index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx ./src/index.ts",
-    "dev2": "pm2 start ecosystem.config.cjs > my_app_log.log 2> my_app_err.log &",
+    "test": "tsx ./src/index.ts",
+    "dev": "tsx ./src/index2.ts",
+    "start": "pm2 start ecosystem.config.cjs > my_app_log.log 2> my_app_err.log &",
     "stop": "pm2 stop ecosystem.config.cjs",
     "dev2:nohup": "nohup tsx ./src/index2.ts > my_app_log.log 2> my_app_err.log &",
     "build": "rollup --config rollup.config.js ",
@@ -19,9 +19,12 @@
     "@u4/opencv4nodejs": "^6.5.2",
     "adb-ts": "^4.0.4",
     "axios": "^1.6.8",
+    "dayjs": "^1.11.13",
     "paddleocrjson": "^1.1.1-a",
+    "pixelmatch": "^6.0.0",
     "pm2": "^5.4.0",
-    "sharp": "^0.33.5"
+    "sharp": "^0.33.5",
+    "lowdb": "^7.0.1"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^11.1.6",
