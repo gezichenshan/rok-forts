@@ -36,7 +36,8 @@ export function getFirstUnhandledData() {
 }
 
 export function setDataHandled(r: Record) {
-    const _data = db.data.records.find((loc) => loc.src === r.src);
+    const _data = db.data.records.filter(l => !l.handled).find((loc) => loc.src === r.src);
+    console.log('set handled:', _data)
     if (_data) {
         _data.handled = true;
         db.write();

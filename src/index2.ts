@@ -4,6 +4,7 @@
 // /Users/super/yjd/platform-tools/adb start-server
 // ./src/mumutool port
 // /Users/super/yjd/platform-tools/adb connect 127.0.0.1:16417
+//如果还是不行，打开模拟器，选中开发者标签，点击打开adb
 import fs from "fs";
 import dayjs from "dayjs";
 import path from "path";
@@ -30,7 +31,7 @@ const adb = new AdbClient({
   port: 5037,
 });
 const kindomDeviceTransportIdMap = {
-  '544': '3',
+  '544': '1',
 }
 
 const devices = await adb.map((device) => device);
